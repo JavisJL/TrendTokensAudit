@@ -249,7 +249,7 @@ contract Venus { // 6,800 bytes --> 5500 --> 4100
 
 
     // convert type IERC20[bep20] into type address[vBep20]
-    function markets(IERC20[] memory _portfolio) public view returns(address[] memory) {
+    function markets(IERC20[] memory _portfolio) internal view returns(address[] memory) {
         uint tokensInPortfolio = _portfolio.length;
         address[] memory market = new address[](tokensInPortfolio);
         for (uint i = 0; i < _portfolio.length; i++) {
