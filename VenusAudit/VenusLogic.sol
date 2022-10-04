@@ -253,14 +253,6 @@ contract VenusBusinessLogic is Venus {
         require(dropToLiquid > dropTolerance, "Would exceed liquidity.");
     }
 
-    /**
-    *   Checks if token is an active token (in Venus markets)
-    *   Requirement fails if token is not active 
-    */
-    function checkActiveTokenX(IERC20 _bep20) internal view {
-        bool tokenInPort = tokenEntered(_bep20);
-        require(tokenInPort,"Token not enabled");
-    }
 
     /**
     *   Safety parameters for all Venus functions ensure the _bep20 market is entered 
@@ -270,6 +262,10 @@ contract VenusBusinessLogic is Venus {
         require(tokenEntered(_bep20) && _value >= minVenusVal && _value <= maxVenusVal && enabledVenus," Venus Req.");
     }
 
+
+    /**
+    *   Ensures contract is not borrowing too much relative to available cash
+    */
     function sufficientMarket(IERC20 _bep20, uint _borrowVal) internal view {
         (, uint borrowBal, ) = screenshot(_bep20);
         uint exposureValue = Lib.getValue(borrowBal,priceBEP20(_bep20))+_borrowVal;
@@ -329,6 +325,27 @@ contract VenusBusinessLogic is Venus {
         checkSafeLiquidLevels(_bep20,redeemAmt,0);
         colRedeemBEP20(_bep20,redeemAmt);
     }
+
+
+
+    /**
+    *   Redeems _bep20Redeem of _value then repays token _bep20Repay
+    *   There is a chance contract could get stuck if beyond venusRequirements()
+    *   and therefore unable to redeem to repay and reduce the risk
+    *   This function always reduces liquidity. Use in case contract is below safe liquid levels
+    *   and unable to redeem funds to repay (lower liquidity) 
+    */
+    function redeemThenRepay(IERC20 _bep20Redeem, IERC20 _bep20Repay, uint _value) onlyManager external {
+        venusRequirements(_bep20Redeem,_value);
+        venusRequirements(_bep20Repay,_value);
+        // redeem collateral
+        uint redeemAmt = Lib.getAssetAmt(_value,priceBEP20(_bep20Redeem));
+        colRedeemBEP20(_bep20Redeem,redeemAmt);
+        // repay asset
+        uint repayAmt = Lib.getAssetAmt(_value,priceBEP20(_bep20Repay));
+        borRepayBEP20(_bep20Repay, repayAmt);
+    }
+
 
 
     /**
