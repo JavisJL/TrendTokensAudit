@@ -113,14 +113,12 @@ contract VenusBusinessLogic is Venus {
 
 
 
-
-    function updateVenus(uint _colManagerShare, uint _dropTolerance, uint _minTradeVal) onlyOwner external {
+    function updateOther(uint _colManagerShare, uint _dropTolerance, uint _minTradeVal) onlyOwner external {
         require(_colManagerShare >= 0.75e18 && _dropTolerance >= 0.10e18 && _minTradeVal>=1e18,"invalid inputs");
         colManagerShare = _colManagerShare; // min amount to borrow,repay,redeem,supply
         dropTolerance = _dropTolerance;
         minTradeVal = _minTradeVal;
     }
-
 
 
 
